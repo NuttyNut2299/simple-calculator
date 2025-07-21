@@ -32,6 +32,8 @@ button {
     font-size: 32px;
     color: white;
     background-color: #393a40;
+    font-family: 'DejaVu Sans Mono', monospace;
+    font-weight: bold;
 }
 
 #github-icon {
@@ -88,4 +90,22 @@ button {
 #all-clear-btn, 
 #clear-btn {
     background-color: #97536a;
+}
+
+#percentage-btn,
+#negative-btn,
+#square-root-btn,
+#divide-btn,
+#multiply-btn,
+#minus-btn,
+#plus-btn,
+#equal-btn {
+    background-color: #ee9f27;
+}
+
+#memory-clear-btn,
+#memory-recall-btn,
+#memory-minus-btn,
+#memory-plus-btn{
+    background-color: #A9A9A9;
 }

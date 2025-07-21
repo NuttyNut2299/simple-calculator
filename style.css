@@ -20,11 +20,18 @@ header {
 }
 
 footer {
-    margin-top: auto;
     padding: 8px 0;
     font-family:'Courier', sans-serif;
     font-size: 16px;
     font-weight: bold;
+}
+
+button {
+    width: 72px;
+    height: 72px;
+    font-size: 32px;
+    color: white;
+    background-color: #393a40;
 }
 
 #github-icon {
@@ -36,8 +43,49 @@ footer {
     position: absolute;
 }
 
-#container {
+#calculator-container {
+    margin: auto 0;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+    gap: 24px;
+    width: 420px;
+    height: auto;
+    background-color: #d3d5d9;
+    padding: 36px 12px;
+    border: solid 4px #afb1b5;
+}
+
+#display-container {
+    background-color: #d6e2e2;
+    width: 364px; 
+    height: 90px;
+    line-height: 90px;
+    border: solid 6px #676a70;
+    border-radius: 4px;
+    font-size: 64px;
+    text-align: right;
+    padding: 8px;
+    font-family: 'OCR A Std', monospace;
+}
+
+#button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.button-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+#all-clear-btn, 
+#clear-btn {
+    background-color: #97536a;
 }

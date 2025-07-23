@@ -17,6 +17,7 @@ let secondValue = 0;
 let currentOperatorType = "";
 
 let valueEntered = false;
+let equalClicked = false;
 // let equalOperator = false;
 // let squareRoot = false;
 
@@ -26,23 +27,28 @@ for (let i = 0; i < buttons ; i++) { // add event listener to all buttons
 
         // TODO: convert to switch cases if possible 
         if (!isNaN(parseInt(buttonPressed))  && display.textContent !== "Error") {
+            if (currentOperatorType === "") {
+                firstValue = 0; // reset state after clicking equal
+            }
             addNumberToDisplay(buttonPressed);
         } else if (buttonPressed === "CE" || buttonPressed === "AC" ) {
             clearDisplay(buttonPressed);
         } else if (buttonPressed === "." && display.textContent !== "Error") {
+            if (currentOperatorType === "") {
+                firstValue = 0; // reset state after clicking equal
+            }
             addDecimal();
-        } else if (buttonPressed === "+/-" && display.textContent !== "Error") {
-            togglePositiveNegative();
-        } else if (buttonPressed === "%" && display.textContent !== "Error") {
-            convertToPercentage();
-        } else if (buttonPressed === "√" && display.textContent !== "Error") {
-            performSquareRoot();
+        // } else if (buttonPressed === "+/-" && display.textContent !== "Error") {
+        //     togglePositiveNegative();
+        // } else if (buttonPressed === "%" && display.textContent !== "Error") {
+        //     convertToPercentage();
+        // } else if (buttonPressed === "√" && display.textContent !== "Error") {
+        //     performSquareRoot();
         } else if ((buttonPressed === "+" || buttonPressed === "-" || buttonPressed === "×" || buttonPressed === "÷") && display.textContent !== "Error") {
-            // equalOperator = false;
-            // performAddition();
             setOperator(buttonPressed);
         } else if (buttonPressed === "=" && display.textContent !== "Error") {
-            setOperator(currentOperatorType); // repeat last operator if no other operator is pressed
+            equalClicked = true;
+            setOperator(currentOperatorType); 
             enableAllButtons(); // override disable button function hack
         } else {    
             console.log("nothing");
@@ -55,7 +61,7 @@ function addNumberToDisplay (numberButton) {
     const displayValue = parseFloat(displayText);
     
     if ((displayValue === 0 && !displayText.includes(".")) || !valueEntered) {
-        if (displayText.includes("-")) {
+        if (displayText.includes("-") && valueEntered) {
             display.textContent = "-" + numberButton;
         } else {
             display.textContent = numberButton;
@@ -79,14 +85,25 @@ function setOperator (operator) {
     if (currentOperatorType === "") {
         firstValue = parseFloat(displayText);
     } else if (currentOperatorType === "+") {
-        if (valueEntered) { // only occur if you pressed equal sign right after other operator sign
+        if (valueEntered) { 
             secondValue = parseFloat(displayText);
         }
         performAddition();
+    } else if (currentOperatorType === "-") {
+        if (valueEntered) { 
+            secondValue = parseFloat(displayText);
+        } 
+        performSubtraction();
     }
 
     valueEntered = false;
     currentOperatorType = operator;
+
+    if (equalClicked) {
+        currentOperatorType = "";
+        secondValue = 0;
+        equalClicked = false;
+    }
 
     enableAllButtons();
     disableButton(operator);
@@ -118,6 +135,14 @@ function performAddition() {
     firstValue += secondValue;
 
     console.log("sum: " + firstValue);
+
+    displayResult(firstValue);
+}
+
+function performSubtraction() {
+    firstValue -= secondValue;
+
+    console.log("subtract: " + firstValue);
 
     displayResult(firstValue);
 }
@@ -278,50 +303,6 @@ function enableAllButtons () {
 //             display.textContent = roundToPrecisionTenChar(newValue).toString();
 //         } else {
 //             display.textContent = newValue.toString();
-//         }
-//     }
-// }
-
-// function performEqual () {
-//     if (currentOperatorType === "+") {
-//         performAddition();
-//         equalOperator = true;
-//     }
-// }
-
-// function performAddition () {
-//     const displayText = display.textContent;
-//     const displayValue = parseFloat(displayText);
-
-//     if (equalOperator && currentOperatorType === "+") {
-//         firstValue += secondValue;
-//     } else if (currentOperatorType === "+") {
-//         secondValue = displayValue;
-//         firstValue += secondValue;
-//     } else if (currentOperatorType === "") {
-//         firstValue = displayValue;
-//         secondValue = displayValue;
-//         currentOperatorType = "+";
-//     }
-
-//     if (firstValue.toString().length > 10) {
-//         if (firstValue.toString().includes(".")) {
-//             const newValue = roundToPrecisionTenChar(firstValue).toString();
-//             if (newValue.length > 10) {
-//                 display.textContent  = "Error";
-//             } else {
-//                 display.textContent  = newValue;
-//                 if (currentOperatorType === "+") {
-//                     changeButtonStyle("plus");
-//                 }
-//             }
-//         } else {
-//             display.textContent = "Error";
-//         }
-//     } else {
-//         display.textContent = firstValue;
-//         if (currentOperatorType === "+") {
-//             changeButtonStyle("plus");
 //         }
 //     }
 // }

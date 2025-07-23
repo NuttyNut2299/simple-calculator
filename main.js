@@ -71,7 +71,7 @@ function addNumberToDisplay (numberButton) {
         valueEntered = true;
         enableAllButtons();
     } else if (displayText.length >= 10) {
-        display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
+        display.textContent = "Error"; // Maximum 10 digits to avoid overflow outside container, 
     } else {
         const newValue = displayText.concat(numberButton);
         display.textContent = newValue;
@@ -94,6 +94,16 @@ function setOperator (operator) {
             secondValue = parseFloat(displayText);
         } 
         performSubtraction();
+    } else if (currentOperatorType === "×") {
+        if (valueEntered) { 
+            secondValue = parseFloat(displayText);
+        } 
+        performMultiplication();
+    } else if (currentOperatorType === "÷") {
+        if (valueEntered) { 
+            secondValue = parseFloat(displayText);
+        } 
+        performDivision();
     }
 
     valueEntered = false;
@@ -147,6 +157,22 @@ function performSubtraction() {
     displayResult(firstValue);
 }
 
+function performMultiplication() {
+    firstValue *= secondValue;
+
+    console.log("multiply: " + firstValue);
+
+    displayResult(firstValue);
+}
+
+function performDivision() {
+    firstValue /= secondValue;
+
+    console.log("divide: " + firstValue);
+
+    displayResult(firstValue);
+}
+
 function displayResult (result) {
     if (result.toString().length > 10) {
         const roundedValue = roundToPrecisionTenChar(result);
@@ -179,7 +205,7 @@ function addDecimal () {
     if (displayText !== "Error") {
         const newValue = display.textContent.concat(".");
         if (newValue.length >= 10) {
-            display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
+            display.textContent = "Error"; // Maximum 10 digits to avoid overflow outside container
         } else if (!valueEntered) {
             display.textContent = "0".concat(".");
             valueEntered = true;

@@ -88,6 +88,7 @@ function setOperator (operator) {
     valueEntered = false;
     currentOperatorType = operator;
 
+    enableAllButtons();
     disableButton(operator);
 }
 

@@ -1,15 +1,24 @@
 const display = document.querySelector("#display-container");
 const buttons = document.querySelectorAll("button").length;
 
+const addBtn = document.querySelector("#plus-btn");
+const minusBtn = document.querySelector("#minus-btn");
+const multiplyBtn = document.querySelector("#multiply-btn");
+const divideBtn = document.querySelector("#divide-btn");
+
+const decimalBtn = document.querySelector("#decimal-btn");
+
 display.textContent = "0";
 
 let firstValue = 0;
 let secondValue = 0;
-let memoryValue = 0;
+// let memoryValue = 0;
 
-let lastOperatorType = "";
 let currentOperatorType = "";
-let squareRoot = false;
+
+let valueEntered = false;
+// let equalOperator = false;
+// let squareRoot = false;
 
 for (let i = 0; i < buttons ; i++) { // add event listener to all buttons
     document.querySelectorAll("button")[i].addEventListener("click", (e) => {
@@ -28,7 +37,14 @@ for (let i = 0; i < buttons ; i++) { // add event listener to all buttons
             convertToPercentage();
         } else if (buttonPressed === "√" && display.textContent !== "Error") {
             performSquareRoot();
-        }else {
+        } else if ((buttonPressed === "+" || buttonPressed === "-" || buttonPressed === "×" || buttonPressed === "÷") && display.textContent !== "Error") {
+            // equalOperator = false;
+            // performAddition();
+            setOperator(buttonPressed);
+        } else if (buttonPressed === "=" && display.textContent !== "Error") {
+            setOperator(currentOperatorType); // repeat last operator if no other operator is pressed
+            enableAllButtons(); // override disable button function hack
+        } else {    
             console.log("nothing");
         }
     });
@@ -38,12 +54,16 @@ function addNumberToDisplay (numberButton) {
     const displayText = display.textContent;
     const displayValue = parseFloat(displayText);
     
-    if (displayValue === 0 && !displayText.includes(".")) {
+    if ((displayValue === 0 && !displayText.includes(".")) || !valueEntered) {
         if (displayText.includes("-")) {
             display.textContent = "-" + numberButton;
         } else {
             display.textContent = numberButton;
         }
+
+        decimalBtn.disabled = false;
+        valueEntered = true;
+        enableAllButtons();
     } else if (displayText.length >= 10) {
         display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
     } else {
@@ -52,71 +72,66 @@ function addNumberToDisplay (numberButton) {
     }
 }
 
-function addDecimal () {  
+function setOperator (operator) {
     const displayText = display.textContent;
+    console.log(currentOperatorType);
 
-    if (displayText !== "Error") {
-        const newValue = display.textContent.concat(".");
-        if (newValue.length >= 10) {
-            display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
-        } else {
-            display.textContent = newValue;
-            document.querySelector("#decimal-btn").disabled = true;
+    if (currentOperatorType === "") {
+        firstValue = parseFloat(displayText);
+    } else if (currentOperatorType === "+") {
+        if (valueEntered) { // only occur if you pressed equal sign right after other operator sign
+            secondValue = parseFloat(displayText);
         }
+        performAddition();
     }
 
-}
+    valueEntered = false;
+    currentOperatorType = operator;
 
-function togglePositiveNegative () {
-    const displayText = display.textContent;
-
-    if (displayText.includes("-") && displayText.length <= 10) {
-        display.textContent = displayText.slice(1);
-    } else if (displayText.length >= 10) {
-        display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
-    } else {
-        const negativeValue = "-" + displayText;
-        display.textContent = negativeValue;
-    }
-}
-
-function convertToPercentage () {
-    const displayText = display.textContent;
-    const displayValue = parseFloat(displayText);
-
-    const newValue = roundToPrecisionPercentage(displayValue).toString();
-
-    if (newValue.length > 10 || newValue.includes("e")) {
-        display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
-    } else {
-        display.textContent = newValue;
-        document.querySelector("#decimal-btn").disabled = true;
-    }
+    disableButton(operator);
 }
 
 function clearDisplay (clearType) {
-    if (clearType === "AC") {
+    if (clearType === "AC" || display.textContent === "Error") {
         firstValue = 0;
         secondValue = 0;
-        memoryValue = 0;
-        lastOperatorType = "";
-        currentOperatorType = "";
+        // memoryValue = 0;
+        // changeButtonStyle("clear");
     }
 
-    if (squareRoot) {
-        firstValue = 0;
-        currentOperatorType = "";
-    }
+    // if (squareRoot) {
+    //     firstValue = 0;
+    //     currentOperatorType = "";
+    // }
 
     display.textContent = 0;
 
-    document.querySelector("#decimal-btn").disabled = false;
+    currentOperatorType = "";
+    enableAllButtons();
+    decimalBtn.disabled = false;
+
     // document.querySelector("#percentage-btn").disabled = false;
 }
 
-function roundToPrecisionPercentage (originalValue) {
-    const precision = Math.pow(10, 10); // 10 digits maximum
-    return (Math.round((originalValue * precision ) / precision) / 100);
+function performAddition() {
+    firstValue += secondValue;
+
+    console.log("sum: " + firstValue);
+
+    displayResult(firstValue);
+}
+
+function displayResult (result) {
+    if (result.toString().length > 10) {
+        const roundedValue = roundToPrecisionTenChar(result);
+        if (roundedValue.toString().length > 10) {
+            display.textContent = "Error";
+        } else {
+            display.textContent = roundedValue;
+        }
+    } else {
+        display.textContent = result;
+    }
 }
 
 function roundToPrecisionTenChar (originalValue) {
@@ -132,47 +147,180 @@ function roundToPrecisionTenChar (originalValue) {
     }
 }
 
-function performSquareRoot () {
+function addDecimal () {  
     const displayText = display.textContent;
-    if (displayText.includes("-")) {
-        if (displayText === "-0") {
-            togglePositiveNegative();
-        } else {
-            display.textContent = "Error";
-        }
-    } else {
-        if (currentOperatorType === "") {
-            if (!squareRoot) {
-                const displayValue = parseFloat(displayText);
-                var newValue = Math.sqrt(displayValue);
-                firstValue = newValue;
-                squareRoot = true;
-            } else if (squareRoot){
-                var newValue = Math.sqrt(firstValue);
-                firstValue = newValue;
-                squareRoot = true;
-            } 
-        }
-        else if (currentOperatorType === "+" || currentOperatorType === "-" || currentOperatorType === "×" || currentOperatorType === "÷") {
-            if (!squareRoot) {
-                const displayValue = parseFloat(displayText);
-                var newValue = Math.sqrt(displayValue);
-                secondValue = newValue;
-                squareRoot = true;
-            } else if (squareRoot){
-                var newValue = Math.sqrt(secondValue);
-                secondValue = newValue;
-                squareRoot = true;
-            } 
-        }
 
-        if (newValue.toString().includes("e")) {
+    if (displayText !== "Error") {
+        const newValue = display.textContent.concat(".");
+        if (newValue.length >= 10) {
             display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
-        } else if (newValue.toString().length > 10) {
-            // const roundedValue = (roundToPrecision(newValue)*100).toString();
-            display.textContent = roundToPrecisionTenChar(newValue).toString();
+        } else if (!valueEntered) {
+            display.textContent = "0".concat(".");
+            valueEntered = true;
+            decimalBtn.disabled = true;
         } else {
-            display.textContent = newValue.toString();
+            display.textContent = newValue;
+            decimalBtn.disabled = true;
         }
     }
+
 }
+
+function disableButton (operator) {
+    if (operator === "+") {
+        addBtn.style.backgroundColor = "white";
+        addBtn.style.color = "black";
+        addBtn.disabled = true;
+    } else if (operator === "-") {
+        minusBtn.style.backgroundColor = "white";
+        minusBtn.style.color = "black";
+        minusBtn.disabled = true;
+    } else if (operator === "×") {
+        multiplyBtn.style.backgroundColor = "white";
+        multiplyBtn.style.color = "black";
+        multiplyBtn.disabled = true;
+    } else if (operator === "÷") {
+        divideBtn.style.backgroundColor = "white";
+        divideBtn.style.color = "black";
+        divideBtn.disabled = true;
+    }
+}
+
+function enableAllButtons () {
+    addBtn.style.backgroundColor = "#ee9f27";
+    addBtn.style.color = "white";
+    addBtn.disabled = false;
+
+    minusBtn.style.backgroundColor = "#ee9f27";
+    minusBtn.style.color = "white";
+    minusBtn.disabled = false;
+
+    multiplyBtn.style.backgroundColor = "#ee9f27";
+    multiplyBtn.style.color = "white";
+    multiplyBtn.disabled = false;
+
+    divideBtn.style.backgroundColor = "#ee9f27";
+    divideBtn.style.color = "white";
+    divideBtn.disabled = false;    
+}
+
+// function togglePositiveNegative () {
+//     const displayText = display.textContent;
+
+//     if (displayText.includes("-") && displayText.length <= 10) {
+//         display.textContent = displayText.slice(1);
+//     } else if (displayText.length >= 10) {
+//         display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
+//     } else {
+//         const negativeValue = "-" + displayText;
+//         display.textContent = negativeValue;
+//     }
+// }
+
+// function convertToPercentage () {
+//     const displayText = display.textContent;
+//     const displayValue = parseFloat(displayText);
+
+//     const newValue = roundToPrecisionPercentage(displayValue).toString();
+
+//     if (newValue.length > 10 || newValue.includes("e")) {
+//         display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
+//     } else {
+//         display.textContent = newValue;
+//         document.querySelector("#decimal-btn").disabled = true;
+//     }
+// }
+
+// function roundToPrecisionPercentage (originalValue) {
+//     const precision = Math.pow(10, 10); // 10 digits maximum
+//     return (Math.round((originalValue * precision ) / precision) / 100);
+// }
+
+// function performSquareRoot () {
+//     const displayText = display.textContent;
+
+//     if (displayText.includes("-")) {
+//         if (displayText === "-0") {
+//             togglePositiveNegative();
+//         } else {
+//             display.textContent = "Error";
+//         }
+//     } else {
+//         if (currentOperatorType === "") {
+//             if (!squareRoot) {
+//                 const displayValue = parseFloat(displayText);
+//                 var newValue = Math.sqrt(displayValue);
+//                 firstValue = newValue;
+//                 squareRoot = true;
+//             } else if (squareRoot){
+//                 var newValue = Math.sqrt(firstValue);
+//                 firstValue = newValue;
+//                 squareRoot = true;
+//             } 
+//         } else if (currentOperatorType === "+" || currentOperatorType === "-" || currentOperatorType === "×" || currentOperatorType === "÷") {
+//             if (!squareRoot) {
+//                 const displayValue = parseFloat(displayText);
+//                 var newValue = Math.sqrt(displayValue);
+//                 secondValue = newValue;
+//                 squareRoot = true;
+//             } else if (squareRoot){
+//                 var newValue = Math.sqrt(secondValue);
+//                 secondValue = newValue;
+//                 squareRoot = true;
+//             } 
+//         }
+
+//         if (newValue.toString().includes("e")) {
+//             display.textContent = "Error"; // Maximum 10 digits to avoid precision issues with floating point and int
+//         } else if (newValue.toString().length > 10) {
+//             // const roundedValue = (roundToPrecision(newValue)*100).toString();
+//             display.textContent = roundToPrecisionTenChar(newValue).toString();
+//         } else {
+//             display.textContent = newValue.toString();
+//         }
+//     }
+// }
+
+// function performEqual () {
+//     if (currentOperatorType === "+") {
+//         performAddition();
+//         equalOperator = true;
+//     }
+// }
+
+// function performAddition () {
+//     const displayText = display.textContent;
+//     const displayValue = parseFloat(displayText);
+
+//     if (equalOperator && currentOperatorType === "+") {
+//         firstValue += secondValue;
+//     } else if (currentOperatorType === "+") {
+//         secondValue = displayValue;
+//         firstValue += secondValue;
+//     } else if (currentOperatorType === "") {
+//         firstValue = displayValue;
+//         secondValue = displayValue;
+//         currentOperatorType = "+";
+//     }
+
+//     if (firstValue.toString().length > 10) {
+//         if (firstValue.toString().includes(".")) {
+//             const newValue = roundToPrecisionTenChar(firstValue).toString();
+//             if (newValue.length > 10) {
+//                 display.textContent  = "Error";
+//             } else {
+//                 display.textContent  = newValue;
+//                 if (currentOperatorType === "+") {
+//                     changeButtonStyle("plus");
+//                 }
+//             }
+//         } else {
+//             display.textContent = "Error";
+//         }
+//     } else {
+//         display.textContent = firstValue;
+//         if (currentOperatorType === "+") {
+//             changeButtonStyle("plus");
+//         }
+//     }
+// }

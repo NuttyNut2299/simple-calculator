@@ -82,7 +82,8 @@ button {
 
 .button-row {
     display: flex;
-    justify-content: center;
+    width: 392px;
+    justify-content: flex-end;
     align-items: center;
     gap: 8px;
 }
@@ -92,9 +93,9 @@ button {
     background-color: #97536a;
 }
 
-#percentage-btn,
+/* #percentage-btn,
 #negative-btn,
-#square-root-btn,
+#square-root-btn, */
 #divide-btn,
 #multiply-btn,
 #minus-btn,

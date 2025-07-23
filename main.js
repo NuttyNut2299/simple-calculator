@@ -8,6 +8,8 @@ const divideBtn = document.querySelector("#divide-btn");
 
 const decimalBtn = document.querySelector("#decimal-btn");
 
+const backspaceBtn = document.querySelector("#backspace-btn");
+
 display.textContent = "0";
 
 let firstValue = 0;
@@ -20,6 +22,10 @@ let valueEntered = false;
 let equalClicked = false;
 // let equalOperator = false;
 // let squareRoot = false;
+
+let inputMode = true;
+
+disableBackspaceButton();
 
 for (let i = 0; i < buttons ; i++) { // add event listener to all buttons
     document.querySelectorAll("button")[i].addEventListener("click", (e) => {
@@ -49,7 +55,9 @@ for (let i = 0; i < buttons ; i++) { // add event listener to all buttons
         } else if (buttonPressed === "=" && display.textContent !== "Error") {
             equalClicked = true;
             setOperator(currentOperatorType); 
-            enableAllButtons(); // override disable button function hack
+            enableAllOperatorButtons(); // override disable button function hack
+        } else if (buttonPressed === "◄" && display.textContent !== "Error" && inputMode) {
+            deleteLastInput();
         } else {    
             console.log("nothing");
         }
@@ -67,14 +75,20 @@ function addNumberToDisplay (numberButton) {
             display.textContent = numberButton;
         }
 
-        decimalBtn.disabled = false;
+        enableBackspaceButton();
+
+        inputMode = true;
         valueEntered = true;
-        enableAllButtons();
+
+        enableAllOperatorButtons();
     } else if (displayText.length >= 10) {
-        display.textContent = "Error"; // Maximum 10 digits to avoid overflow outside container, 
+        display.textContent = "Error"; // Maximum 10 digits to avoid overflow outside container
+        disableBackspaceButton();
     } else {
         const newValue = displayText.concat(numberButton);
         display.textContent = newValue;
+
+        enableBackspaceButton();
     }
 }
 
@@ -115,8 +129,9 @@ function setOperator (operator) {
         equalClicked = false;
     }
 
-    enableAllButtons();
+    enableAllOperatorButtons();
     disableButton(operator);
+    disableBackspaceButton();
 }
 
 function clearDisplay (clearType) {
@@ -135,7 +150,8 @@ function clearDisplay (clearType) {
     display.textContent = 0;
 
     currentOperatorType = "";
-    enableAllButtons();
+    enableAllOperatorButtons();
+    disableBackspaceButton();
     decimalBtn.disabled = false;
 
     // document.querySelector("#percentage-btn").disabled = false;
@@ -144,15 +160,11 @@ function clearDisplay (clearType) {
 function performAddition() {
     firstValue += secondValue;
 
-    console.log("sum: " + firstValue);
-
     displayResult(firstValue);
 }
 
 function performSubtraction() {
     firstValue -= secondValue;
-
-    console.log("subtract: " + firstValue);
 
     displayResult(firstValue);
 }
@@ -160,15 +172,11 @@ function performSubtraction() {
 function performMultiplication() {
     firstValue *= secondValue;
 
-    console.log("multiply: " + firstValue);
-
     displayResult(firstValue);
 }
 
 function performDivision() {
     firstValue /= secondValue;
-
-    console.log("divide: " + firstValue);
 
     displayResult(firstValue);
 }
@@ -216,6 +224,24 @@ function addDecimal () {
         }
     }
 
+    enableBackspaceButton();
+}
+
+function deleteLastInput () {
+    const displayValue = display.textContent;
+
+    const newValue = displayValue.slice(0, -1);
+
+    if (!newValue.includes(".")) {
+        decimalBtn.disabled = false;
+    } 
+
+    if (newValue.length === 0 || (newValue.length === 1 && newValue === "0")) {
+        display.textContent = "0";
+        disableBackspaceButton();
+    } else {
+        display.textContent = newValue;
+    }
 }
 
 function disableButton (operator) {
@@ -238,7 +264,7 @@ function disableButton (operator) {
     }
 }
 
-function enableAllButtons () {
+function enableAllOperatorButtons () {
     addBtn.style.backgroundColor = "#ee9f27";
     addBtn.style.color = "white";
     addBtn.disabled = false;
@@ -255,6 +281,30 @@ function enableAllButtons () {
     divideBtn.style.color = "white";
     divideBtn.disabled = false;    
 }
+
+function disableBackspaceButton () {
+    backspaceBtn.style.backgroundColor = "white";
+    backspaceBtn.style.color = "black";
+    backspaceBtn.disabled = true;
+}
+
+function enableBackspaceButton () {
+    backspaceBtn.style.backgroundColor = "#97536a";
+    backspaceBtn.style.color = "white";
+    backspaceBtn.disabled = false;
+}
+
+document.addEventListener("keydown", (e) => {
+    const keyName = e.key;
+
+    if (keyName === "Backspace") {
+        if (!backspaceBtn.disabled) {
+            deleteLastInput ();
+        }
+    }
+  },
+  false,
+);
 
 // function togglePositiveNegative () {
 //     const displayText = display.textContent;

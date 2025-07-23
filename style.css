@@ -88,6 +88,7 @@ button {
     gap: 8px;
 }
 
+#backspace-btn,
 #all-clear-btn, 
 #clear-btn {
     background-color: #97536a;

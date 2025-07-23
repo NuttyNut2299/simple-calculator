@@ -59,7 +59,7 @@ for (let i = 0; i < buttons ; i++) { // add event listener to all buttons
         } else if (buttonPressed === "◄" && display.textContent !== "Error" && inputMode) {
             deleteLastInput();
         } else {    
-            console.log("nothing");
+            // do nothing
         }
     });
 }
@@ -68,7 +68,7 @@ function addNumberToDisplay (numberButton) {
     const displayText = display.textContent;
     const displayValue = parseFloat(displayText);
     
-    if ((displayValue === 0 && !displayText.includes(".")) || !valueEntered) {
+    if ((displayValue === 0 && !displayText.includes(".")) || !valueEntered) { // if the number input is the first number
         if (displayText.includes("-") && valueEntered) {
             display.textContent = "-" + numberButton;
         } else {
@@ -82,7 +82,7 @@ function addNumberToDisplay (numberButton) {
 
         enableAllOperatorButtons();
     } else if (displayText.length >= 10) {
-        display.textContent = "Error"; // Maximum 10 digits to avoid overflow outside container
+        display.textContent = "Error"; // Maximum 10 characters to avoid overflow outside container
         disableBackspaceButton();
     } else {
         const newValue = displayText.concat(numberButton);
@@ -94,14 +94,13 @@ function addNumberToDisplay (numberButton) {
 
 function setOperator (operator) {
     const displayText = display.textContent;
-    console.log(currentOperatorType);
 
-    if (currentOperatorType === "") {
+    if (currentOperatorType === "") { // entering first number of the pair
         firstValue = parseFloat(displayText);
-    } else if (currentOperatorType === "+") {
-        if (valueEntered) { 
+    } else if (currentOperatorType === "+") { 
+        if (valueEntered) {           // entering second number of the pair
             secondValue = parseFloat(displayText);
-        }
+        }                             // else, does nothing here, only possible if switching operator without number entered 
         performAddition();
     } else if (currentOperatorType === "-") {
         if (valueEntered) { 
@@ -183,7 +182,7 @@ function performDivision() {
 
 function displayResult (result) {
     if (result.toString().length > 10) {
-        const roundedValue = roundToPrecisionTenChar(result);
+        const roundedValue = roundToPrecisionTenChar(result); // round floating number to avoid overflow outside container
         if (roundedValue.toString().length > 10) {
             display.textContent = "Error";
         } else {
@@ -198,6 +197,7 @@ function roundToPrecisionTenChar (originalValue) {
     const valueString = originalValue.toString();
     const decimalPosition = valueString.indexOf(".") + 1;
 
+    // negative is also count as a character, need to account it to display at most 10 character in the container
     if (!valueString.includes("-")) {
         const roundAmount = Math.pow(10, (10 - decimalPosition));
         return Math.round(originalValue * roundAmount) / roundAmount;
@@ -213,7 +213,7 @@ function addDecimal () {
     if (displayText !== "Error") {
         const newValue = display.textContent.concat(".");
         if (newValue.length >= 10) {
-            display.textContent = "Error"; // Maximum 10 digits to avoid overflow outside container
+            display.textContent = "Error"; // Maximum 10 characters to avoid overflow outside container
         } else if (!valueEntered) {
             display.textContent = "0".concat(".");
             valueEntered = true;
@@ -230,7 +230,7 @@ function addDecimal () {
 function deleteLastInput () {
     const displayValue = display.textContent;
 
-    const newValue = displayValue.slice(0, -1);
+    const newValue = displayValue.slice(0, -1); // delete last letter of the string value
 
     if (!newValue.includes(".")) {
         decimalBtn.disabled = false;
@@ -297,10 +297,76 @@ function enableBackspaceButton () {
 document.addEventListener("keydown", (e) => {
     const keyName = e.key;
 
-    if (keyName === "Backspace") {
-        if (!backspaceBtn.disabled) {
-            deleteLastInput ();
-        }
+    switch (keyName) {
+        case "Backspace":
+            if (!backspaceBtn.disabled) {
+                deleteLastInput ();
+            }
+            break;
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+            if (display.textContent !== "Error") {
+                if (currentOperatorType === "") {
+                    firstValue = 0; // reset state after clicking equal
+                }
+                addNumberToDisplay(keyName);
+            }
+            break;
+        case "+":
+            if (!addBtn.disabled){
+                if (display.textContent !== "Error") {
+                    setOperator(keyName);
+                }
+            }
+            break;
+        case "-":
+            if (!minusBtn.disabled){
+                if (display.textContent !== "Error") {
+                    setOperator(keyName);
+                }
+            }
+            break;
+        case "*":
+            if (!multiplyBtn.disabled){
+                if (display.textContent !== "Error") {
+                    setOperator("×");
+                }
+            }
+            break;
+        case "/":
+            if (!divideBtn.disabled){
+                if (display.textContent !== "Error") {
+                    setOperator("÷");
+                }
+            }
+            break;
+        case ".":
+            if (!backspaceBtn.disabled) {
+                if (display.textContent !== "Error") {
+                    if (currentOperatorType === "") {
+                        firstValue = 0; // reset state after clicking equal
+                    }
+                    addDecimal();
+                }
+            }
+            break;
+        case "Enter":
+            if (display.textContent !== "Error") {
+                equalClicked = true;
+                setOperator(currentOperatorType); 
+                enableAllOperatorButtons(); // override disable button function hack
+            }
+            break;
+        default:
+            return;
     }
   },
   false,
